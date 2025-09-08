@@ -16,15 +16,16 @@ app.use(cors({
 
 app.use(express.json());
 app.use(session({
-  secret: "supersecretkey",
+  secret: "supersecretkey", // move to env var in prod
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: false,   // must be false on localhost
-    sameSite: "none" // good balance for localhost dev
+    secure: false,    // true only when using HTTPS
+    sameSite: "lax",  // allow cookies in localhost dev
   }
 }));
+
 
 app.use(passport.initialize());
 app.use(passport.session());

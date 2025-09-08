@@ -16,11 +16,9 @@ exports.getSettings = async (req, res) => {
 // SAVE chord settings
 exports.saveSettings = async (req, res) => {
   try {
-    // Use findByIdAndUpdate for a more robust update
-    // This allows Mongoose to validate and save the sub-document correctly
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
-      { $set: { settings: req.body } },
+      { $set: { settings: req.body } }, // This will replace the entire settings object
       { new: true, runValidators: true } // Return the updated document & run schema validators
     );
     if (!updatedUser) {
@@ -34,24 +32,17 @@ exports.saveSettings = async (req, res) => {
 };
 
 // RESET chord settings to defaults
-// controllers/chordController.js
 exports.resetSettings = async (req, res) => {
   try {
-    const defaults = {
-      tempo: 120,
-      scale: "C",
-      transpose: 0,
-      enableBeats: false,
-      beatMode: "1loop",
-      instruments: { piano: true }
-    };
-
-const updatedUser = await User.findByIdAndUpdate(
-  req.user._id,
-  { $set: Object.fromEntries(Object.entries(req.body).map(([key, value]) => [`settings.${key}`, value])) },
-  { new: true, runValidators: true }
-);
-
+    // Get default settings from the User schema
+    const defaultSettings = new User().settings;
+    
+    // Find the user and update their settings with the defaults
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: { settings: defaultSettings } },
+      { new: true, runValidators: true }
+    );
 
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });

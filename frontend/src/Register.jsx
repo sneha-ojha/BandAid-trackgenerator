@@ -1,21 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { registerUser } from "./api"; // Correctly import the real API function
 
-// Mock API functions for a self-contained component
-const registerUser = async (formData) => {
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  console.log("Registering user:", formData.username);
-  if (!formData.username || !formData.password) {
-    throw new Error("Username and password cannot be empty.");
-  }
-  return { message: "User registered successfully!" };
-};
-
-const getProfile = async () => {
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return { username: "newly-registered-user", email: "user@example.com" };
-};
-
-const Register = ({ onRegister, onSwitchToLogin }) => {
+const Register = ({ onRegister, onSwitchToLogin, onSwitchToHome }) => {
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [message, setMessage] = useState("");
   const [taglineAnimationComplete, setTaglineAnimationComplete] = useState(false);
@@ -36,49 +22,48 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
     try {
       const res = await registerUser(formData);
       setMessage(res.message || "User registered successfully!");
-      const profile = await getProfile();
-      if (onRegister) onRegister(profile);
+      if (onRegister) onRegister(res.user);
     } catch (err) {
-      const msg = err.error || err.message || "Something went wrong";
+      const msg = err.error || "Something went wrong";
       setMessage("Error: " + msg);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 text-white relative overflow-hidden px-4 font-michroma">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0A0A0E] text-white relative overflow-hidden px-4 font-michroma">
       {/* Animated background particles and grid */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 w-96 h-96 -translate-x-1/2 -translate-y-1/2 bg-purple-700 rounded-full opacity-10 blur-3xl animate-pulse"></div>
         <div className="absolute bottom-0 right-0 w-80 h-80 bg-pink-500 rounded-full opacity-10 blur-3xl animate-pulse-slow"></div>
         <div className="absolute top-0 left-0 w-64 h-64 bg-indigo-500 rounded-full opacity-10 blur-3xl animate-pulse-fast"></div>
-        <div className="absolute inset-0 bg-repeat opacity-5" style={{ 
+        <div className="absolute inset-0 bg-repeat opacity-5" style={{
           backgroundImage: 'linear-gradient(to right, rgba(168,85,247,0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(168,85,247,0.1) 1px, transparent 1px)',
           backgroundSize: '40px 40px',
         }}></div>
       </div>
-      
+
       {/* BAND-AID heading */}
       <h1
-        className="absolute top-10 text-6xl font-extrabold tracking-wider text-purple-300 z-10 drop-shadow-[0_0_25px_rgba(168,85,247,0.9)]"
+        className="absolute top-10 text-6xl font-extrabold tracking-wider text-white z-10 drop-shadow-[0_0_25px_rgba(255,255,255,0.2)]"
       >
-        BandAid
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500 animate-text-gradient">BandAid</span>
       </h1>
 
       {/* Tagline with combined animation */}
       <p
-        className={`absolute top-28 text-lg text-purple-400 font-semibold whitespace-nowrap z-10 overflow-hidden ${taglineAnimationComplete ? 'animate-marquee' : 'animate-fade-in-down-once'}`}
+        className={`absolute top-28 text-lg text-gray-300 font-semibold whitespace-nowrap z-10 overflow-hidden ${taglineAnimationComplete ? 'animate-marquee' : 'animate-fade-in-down-once'}`}
       >
         Your handy and easy-to-use track generator. Get your track in just a few clicks - Anytime. Anywhere.
       </p>
 
       {/* Dark neon-styled card */}
-      <div className="w-full max-w-xl mt-44 bg-gray-800/90 backdrop-blur-md p-16 rounded-3xl transition-all duration-500 z-10 relative overflow-hidden group"
+      <div className="w-full max-w-xl mt-44 bg-gray-800/90 backdrop-blur-md p-16 rounded-3xl transition-all duration-500 z-10 relative overflow-hidden group border border-purple-700/50"
         style={{
           boxShadow: '0 0 50px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.2)',
           border: 'none',
         }}
       >
-        <h2 className="text-4xl font-extrabold text-purple-200 text-center mb-6 tracking-widest drop-shadow-[0_0_15px_rgba(168,85,247,0.8)] relative z-10">
+        <h2 className="text-4xl font-extrabold text-white text-center mb-6 tracking-widest drop-shadow-md relative z-10">
           Register
         </h2>
 
@@ -90,7 +75,7 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
             value={formData.username}
             onChange={handleChange}
             required
-            className="w-full px-5 py-3 rounded-xl bg-gray-900 text-purple-100 placeholder-purple-400 border border-purple-600 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-300 shadow-inner shadow-black/50"
+            className="w-full px-5 py-3 rounded-xl bg-gray-900 text-gray-100 placeholder-gray-400 border border-purple-600 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-300 shadow-inner shadow-black/50"
           />
           <input
             type="password"
@@ -99,26 +84,34 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
             value={formData.password}
             onChange={handleChange}
             required
-            className="w-full px-5 py-3 rounded-xl bg-gray-900 text-purple-100 placeholder-purple-400 border border-purple-600 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-300 shadow-inner shadow-black/50"
+            className="w-full px-5 py-3 rounded-xl bg-gray-900 text-gray-100 placeholder-gray-400 border border-purple-600 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-300 shadow-inner shadow-black/50"
           />
           <button
             type="submit"
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 text-white font-extrabold shadow-lg shadow-purple-800/70 transition-all duration-300 transform hover:scale-105 active:scale-95 relative glow-on-hover"
+            className="w-full py-3 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white font-extrabold shadow-lg shadow-pink-500/30 transition-all duration-500 transform hover:scale-105 relative"
           >
             Register
           </button>
         </form>
 
-        <p className={`mt-4 text-center font-semibold relative z-10 ${message.startsWith("Error") ? 'text-red-400' : 'text-green-400'} animate-fade-in-out`}>{message}</p>
+        <p className={`mt-4 text-center font-semibold relative z-10 ${message.startsWith("Error") ? 'text-red-400' : 'text-green-400'}`}>{message}</p>
 
-        <p className="mt-6 text-center text-purple-300 font-medium relative z-10">
+        <p className="mt-6 text-center text-gray-400 font-medium relative z-10">
           Already have an account?{" "}
           <button
             type="button"
             onClick={onSwitchToLogin}
-            className="text-pink-400 hover:text-purple-200 underline-offset-4 hover:underline transition-colors duration-300"
+            className="text-pink-400 hover:text-purple-400 underline-offset-4 hover:underline transition-colors duration-300"
           >
             Login here
+          </button>
+          <span className="mx-2 text-gray-600">|</span>
+          <button
+            type="button"
+            onClick={onSwitchToHome}
+            className="text-pink-400 hover:text-purple-400 underline-offset-4 hover:underline transition-colors duration-300"
+          >
+            Go to Home
           </button>
         </p>
       </div>
@@ -167,37 +160,13 @@ const Register = ({ onRegister, onSwitchToLogin }) => {
         .animate-pulse-fast {
           animation: pulse-fast 3s ease-in-out infinite alternate;
         }
-        .glow-on-hover {
-          position: relative;
-          z-index: 0;
-          overflow: hidden;
+        @keyframes text-gradient {
+          0% { background-position: 0% 50%; }
+          100% { background-position: 100% 50%; }
         }
-        .glow-on-hover:before {
-          content: '';
-          background: linear-gradient(45deg, #ff00c1, #ec4899, #06b6d4, #ff00c1);
-          position: absolute;
-          top: -2px;
-          left: -2px;
-          background-size: 400%;
-          z-index: -1;
-          filter: blur(8px);
-          width: calc(100% + 4px);
-          height: calc(100% + 4px);
-          animation: glowing 20s linear infinite;
-          opacity: 0;
-          transition: opacity .3s ease-in-out;
-          border-radius: 12px;
-        }
-        .glow-on-hover:hover:before {
-          opacity: 1;
-        }
-        .glow-on-hover:active:after {
-          background: transparent;
-        }
-        @keyframes glowing {
-          0% { background-position: 0 0; }
-          50% { background-position: 400% 0; }
-          100% { background-position: 0 0; }
+        .animate-text-gradient {
+          background-size: 200% auto;
+          animation: text-gradient 3s linear infinite alternate;
         }
       `}</style>
     </div>
