@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { registerUser } from "./api"; // Correctly import the real API function
+import { registerUser } from "../api"; // Correctly import the real API function
 
 const Register = ({ onRegister, onSwitchToLogin, onSwitchToHome }) => {
   const [formData, setFormData] = useState({ username: "", password: "" });

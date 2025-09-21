@@ -156,9 +156,9 @@ const HomePage = ({ onSwitchToLogin }) => {
             <div className="flex flex-col md:flex-row justify-between items-center space-y-12 md:space-y-0 md:space-x-12">
                 <div className="flex flex-col items-center text-center max-w-sm">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center mb-4 text-3xl font-bold">1</div>
-                    <h3 className="text-2xl font-bold text-gray-100 mb-2">Choose Your Chords</h3>
+                    <h3 className="text-2xl font-bold text-gray-100 mb-2">Choose Your Scale</h3>
                     <p className="text-gray-400">
-                        Select a series of chords to form the harmonic foundation of your track.
+                        Select your scale and series of chords will form the harmonic foundation of your track.
                     </p>
                 </div>
                 <div className="flex flex-col items-center text-center max-w-sm">

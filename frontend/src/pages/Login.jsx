@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { loginUser } from "./api"; // Correctly import the real API function
+import { loginUser } from "../api"; // Correctly import the real API function
 
 const Login = ({ onLogin, onSwitchToRegister, onSwitchToHome }) => {
   const [formData, setFormData] = useState({ username: "", password: "" });
