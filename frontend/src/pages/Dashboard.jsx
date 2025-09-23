@@ -24,6 +24,7 @@ const Dashboard = ({ onLogout }) => {
         scale: 'C',
         transpose: 0, // Reverted to original state
         enableBeats: false,
+         arpeggioPattern: 'melodic',
         beatMode: "1loop",
         // This will now hold more complex data for instruments with special options
         activeInstruments: {}, 
@@ -57,6 +58,7 @@ const [beatGains, setBeatGains] = useState({
         { label: "Guitar (Electric)", value: "electric_guitar_clean", defaultGain: 1.5 },
         { label: "Violin", value: "violin", defaultGain: 1.5 },
         { label: "Flute", value: "flute", defaultGain: 1.5 },
+         { label: "Arpeggio", value: "arpeggio", defaultGain: 1.8 }
     ], []);
 
     const updateSettings = useCallback((newSetting) => {
@@ -66,24 +68,26 @@ const [beatGains, setBeatGains] = useState({
         }
     }, [collaborationId]);
 
-    const updateInstrumentSetting = useCallback((instrumentValue, key, value) => {
-        const activeInstrument = settings.activeInstruments[instrumentValue];
-        if (!activeInstrument) return;
+const updateInstrumentSetting = useCallback((instrumentValue, key, value) => {
+    setSettings(prevSettings => {
+        const activeInstrument = prevSettings.activeInstruments[instrumentValue];
+        if (!activeInstrument) return prevSettings;
 
         const updatedInstrument = { ...activeInstrument, [key]: value };
-        
         if (key === 'style' && value === 'block') {
             delete updatedInstrument.octave;
         }
 
-        updateSettings({
+        return {
+            ...prevSettings,
             activeInstruments: {
-                ...settings.activeInstruments,
+                ...prevSettings.activeInstruments,
                 [instrumentValue]: updatedInstrument,
             }
-        });
-    }, [settings.activeInstruments, updateSettings]);
-    
+        };
+    });
+}, []);
+
     const displayedScale = useMemo(() => {
         const rootIndex = scales.indexOf(settings.scale);
         const transposedIndex = (rootIndex + settings.transpose + 12) % 12;
@@ -181,35 +185,51 @@ const [beatGains, setBeatGains] = useState({
     const [snare] = useState(() => new Tone.Sampler({ urls: { D1: "snare.mp3" }, baseUrl: "https://tonejs.github.io/audio/drum-samples/CR78/" }).toDestination());
     const [hihat] = useState(() => new Tone.Sampler({ urls: { "F#1": "hihat.mp3" }, baseUrl: "https://tonejs.github.io/audio/drum-samples/CR78/" }).toDestination());
 
-  const toggleInstrument = useCallback(async (inst) => {
-        if (!audioContext) return;
-        
-        const newActiveInstruments = { ...settings.activeInstruments };
-        const isActive = !!newActiveInstruments[inst.value];
 
-        if (!isActive) {
-            try {
-                setStatusMessage(`Loading ${inst.label}...`);
-                const player = await Soundfont.instrument(audioContext, inst.value);
-                setInstrumentPlayers((prev) => ({ ...prev, [inst.value]: player }));
+const toggleInstrument = useCallback(async (inst) => {
+    if (!audioContext) return;
 
-                if (inst.value === 'acoustic_grand_piano') {
-                    newActiveInstruments[inst.value] = { gain: inst.defaultGain, style: 'block' };
-                } else {
-                    newActiveInstruments[inst.value] = { gain: inst.defaultGain };
-                }
-                setStatusMessage('');
-            } catch (err) {
-                console.error("Failed to load instrument soundfont:", err);
-                setStatusMessage('Error loading instrument. Please try another.');
-                return;
-            }
-        } else {
-            delete newActiveInstruments[inst.value];
+setSettings(prevSettings => {
+    const newActiveInstruments = { ...prevSettings.activeInstruments };
+    const isActive = !!newActiveInstruments[inst.value];
+
+    if (!isActive) {
+        newActiveInstruments[inst.value] = { 
+            gain: inst.defaultGain, 
+            style: 'arpeggio',
+            pattern: 'melodic'
+        };
+        // <-- STEP 1: ensure arpeggioPattern in main settings exists
+        return { 
+            ...prevSettings, 
+            activeInstruments: newActiveInstruments,
+            arpeggioPattern: prevSettings.arpeggioPattern || 'melodic'
+        };
+    } else {
+        const { [inst.value]: _, ...rest } = newActiveInstruments;
+        return { ...prevSettings, activeInstruments: rest };
+    }
+});
+
+
+    // Use settingsRef to get the latest activeInstruments safely
+    if (!settingsRef.current.activeInstruments[inst.value]) {
+        try {
+            setStatusMessage(`Loading ${inst.label}...`);
+            const player = await Soundfont.instrument(
+                audioContext, 
+                inst.value === 'arpeggio' ? 'acoustic_grand_piano' : inst.value
+            );
+            setInstrumentPlayers(prev => ({ ...prev, [inst.value]: player }));
+            setStatusMessage('');
+        } catch (err) {
+            console.error("Failed to load instrument soundfont:", err);
+            setStatusMessage('Error loading instrument. Please try another.');
         }
-        updateSettings({ activeInstruments: newActiveInstruments });
-    }, [audioContext, settings.activeInstruments, updateSettings]);
- 
+    }
+}, [audioContext]);
+
+
 
 
 const drumSeq = useRef(new Tone.Sequence((time, step) => {
@@ -233,28 +253,74 @@ const drumSeq = useRef(new Tone.Sequence((time, step) => {
 }, [...Array(8).keys()], "8n")).current;
 
 
- const chordSeq = useRef(new Tone.Sequence((time, chordIndex) => {
-        Object.entries(settingsRef.current.activeInstruments).forEach(([value, instSettings]) => {
-            const player = playersRef.current[value];
-            if (player) {
-                const octave = instSettings.octave || 0;
-                const notes = getChordNotes(chordIndex, octave);
-                const gain = instSettings.gain;
+const chordSeq = useRef(
+  new Tone.Sequence((time, chordIndex) => {
+    Object.entries(settingsRef.current.activeInstruments).forEach(([value, instSettings]) => {
+      if (value === 'arpeggio') return; // skip arpeggio here
+      const player = playersRef.current[value];
+      if (!player) return;
 
-                if (value === 'acoustic_grand_piano' && instSettings.style === 'arpeggio') {
-                    player.play(notes.root,  time,                               { duration: 0.5, gain });
-                    player.play(notes.third, time + Tone.Time('4n').toSeconds(), { duration: 0.5, gain });
-                    player.play(notes.fifth, time + Tone.Time('2n').toSeconds(), { duration: 0.5, gain });
-                    player.play(notes.third, time + Tone.Time('2n+4n').toSeconds(), { duration: 0.5, gain });
-                } else {
-                    player.play(notes.root, time, { duration: 1.5, gain });
-                    player.play(notes.third, time, { duration: 1.5, gain });
-                    player.play(notes.fifth, time, { duration: 1.5, gain });
-                }
-            }
-        });
-        Tone.Draw.schedule(() => setCurrentChordIndex(chordIndex), time);
-    }, [0, 1, 2, 3], '1m')).current;
+      const octave = instSettings.octave || 0;
+      const notes = getChordNotes(chordIndex, octave);
+      const gain = instSettings.gain;
+
+      player.play(notes.root, time, { duration: 1.5, gain });
+      player.play(notes.third, time, { duration: 1.5, gain });
+      player.play(notes.fifth, time, { duration: 1.5, gain });
+    });
+
+    Tone.Draw.schedule(() => setCurrentChordIndex(chordIndex), time);
+  }, [0, 1, 2, 3], "1m")
+).current;
+
+const arpeggioPatterns = {
+  melodic: ['root', 'third', 'fifth', 'third'],
+  strong: ['root', 'fifth', 'third', 'fifth'],
+  ascending: ['root', 'third', 'fifth', 'root_octave_up'],
+  descending: ['root_octave_up', 'fifth', 'third', 'root']
+};
+
+// Helper to get the actual note from a chord and pattern key
+const getPatternNote = (notes, key) => {
+  switch (key) {
+    case 'root': return notes.root;
+    case 'third': return notes.third;
+    case 'fifth': return notes.fifth;
+    case 'root_octave_up': {
+      const octave = parseInt(notes.root.slice(-1)) + 1; // Increase octave
+      return notes.root.slice(0, -1) + octave;
+    }
+    default: return notes.root;
+  }
+};
+
+const arpeggioSeq = useRef(
+  new Tone.Sequence((time, chordIndex) => {
+    Object.entries(settingsRef.current.activeInstruments).forEach(([value, instSettings]) => {
+      if (value !== 'arpeggio') return;
+      const player = playersRef.current[value];
+      if (!player) return;
+
+      const octave = instSettings.octave || 0;
+      const notes = getChordNotes(chordIndex, octave);
+
+      // Get pattern from instrument settings instead of global settings
+      const selectedPattern = arpeggioPatterns[instSettings.pattern || 'melodic'];
+
+      selectedPattern.forEach((key, i) => {
+        const note = getPatternNote(notes, key);
+        const noteTime = Tone.Time("4n").toSeconds() * i;
+
+        Tone.Transport.scheduleOnce((scheduledTime) => {
+          player.play(note, scheduledTime, { gain: instSettings.gain, duration: 0.4 });
+        }, time + noteTime);
+      });
+    });
+  }, [0, 1, 2, 3], "1m")
+).current;
+
+
+
     
       const startProgression = useCallback(async () => {
           if (!audioContext || isPlaying || Object.keys(settings.activeInstruments).length === 0) return;
@@ -263,18 +329,20 @@ const drumSeq = useRef(new Tone.Sequence((time, step) => {
           Tone.Transport.bpm.value = settings.bpm;
           drumSeq.start(0);
           chordSeq.start(0);
+          arpeggioSeq.start(0); 
           Tone.Transport.start();
           setIsPlaying(true);
-      }, [audioContext, isPlaying, settings.activeInstruments, settings.bpm, drumSeq, chordSeq]);
+      }, [audioContext, isPlaying, settings.activeInstruments, settings.bpm, drumSeq, chordSeq,arpeggioSeq]);
   
       const stopProgression = useCallback(() => {
           Tone.Transport.stop();
           Tone.Transport.cancel();
           drumSeq.stop();
           chordSeq.stop();
+           arpeggioSeq.stop(); 
           setIsPlaying(false);
           setCurrentChordIndex(null);
-      }, [drumSeq, chordSeq]);
+      }, [drumSeq, chordSeq,arpeggioSeq]);
   
       useEffect(() => {
           Tone.Transport.bpm.value = settings.bpm;
@@ -400,7 +468,8 @@ const drumSeq = useRef(new Tone.Sequence((time, step) => {
     onTranspose={handleTranspose}
     onUpdateInstrumentSetting={updateInstrumentSetting}
     beatGains={beatGains}         // <-- Add this
-    setBeatGains={setBeatGains}   // <-- Add this
+    setBeatGains={setBeatGains} 
+     arpeggioPatterns={arpeggioPatterns}    // <-- Add this
 />
 
 
