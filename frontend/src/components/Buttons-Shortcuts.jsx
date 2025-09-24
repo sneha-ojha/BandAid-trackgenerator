@@ -39,11 +39,13 @@ export const ShortcutsFooter = () => (
                 <h2 className="text-xl font-bold text-purple-400 mb-8 text-center">Keyboard Shortcuts</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 text-gray-300">
                     <div className="flex items-center space-x-3"><kbd className="kbd">P</kbd><span className="text-pink-400">➪</span><span>Toggle Piano</span></div>
-                    <div className="flex items-center space-x-3"><kbd className="kbd">G</kbd><span className="text-pink-400">➪</span><span>Toggle Guitar</span></div>
+                    <div className="flex items-center space-x-3"><kbd className="kbd">S</kbd><span className="text-pink-400">➪</span><span>Toggle Strings</span></div>
                     <div className="flex items-center space-x-3"><kbd className="kbd">V</kbd><span className="text-pink-400">➪</span><span>Toggle Violin</span></div>
+
                     <div className="flex items-center space-x-3 col-span-2 sm:col-span-1 lg:col-span-1"><kbd className="kbd">Space</kbd><span className="text-pink-400">➪</span><span>Play / Stop</span></div>
                     <div className="flex items-center space-x-3"><kbd className="kbd">B</kbd><span className="text-pink-400">➪</span><span>Beats (1 loop)</span></div>
                     <div className="flex items-center space-x-3"><kbd className="kbd">N</kbd><span className="text-pink-400">➪</span><span>Beats (2 loops)</span></div>
+                                            <div className="flex items-center space-x-3"><kbd className="kbd">A</kbd><span className="text-pink-400">➪</span><span>Toggle Arpeggio</span></div>
                     <div className="flex items-center space-x-3"><kbd className="kbd">F</kbd><span className="text-pink-400">➪</span><span>Toggle Flute</span></div>
                 </div>
             </div>
