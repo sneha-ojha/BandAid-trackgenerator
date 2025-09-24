@@ -1,0 +1,29 @@
+[33mcommit d2c564803e8b7de4cc12a20865f3188d2c979e14[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: sneha <ojha.sneha021@outlook.com>
+Date:   Thu Sep 25 00:23:29 2025 +0530
+
+    feat: Add melodic arpeggio engine with mood and speed controls, octave shift feature, updated ui
+
+[33mcommit 54a2853d32e1a4ec793383a1f1954bd5400554bd[m
+Author: sneha <ojha.sneha021@outlook.com>
+Date:   Wed Sep 24 00:54:14 2025 +0530
+
+    feat: Add arpeggio instrument with selectable patterns
+
+[33mcommit 957eea0970e73ddb4072e52199000b4a8c7bbf55[m
+Author: sneha <ojha.sneha021@outlook.com>
+Date:   Sun Sep 21 21:45:51 2025 +0530
+
+    Segregate components, add collaboration and refactor dashboard UI
+
+[33mcommit 500c1f54874f803067515a631f7197acb39c06eb[m
+Author: sneha <ojha.sneha021@outlook.com>
+Date:   Mon Sep 8 15:15:45 2025 +0530
+
+    Update .gitignore files and other UI/UX changes
+
+[33mcommit 2a7a37dfd5f36914d2b6570633c52f4b09fec2e6[m
+Author: sneha <ojha.sneha021@outlook.com>
+Date:   Sat Sep 6 12:07:57 2025 +0530
+
+    Initial commit: track generator project

@@ -278,9 +278,9 @@ player.play(notes.fifth, time, { duration: 1.5, gain });
 ).current;
 
 const arpeggioPatterns = useMemo(() => ({
-  Melodic: ['root', 'third', 'fifth', 'third'],
-  Strong: ['root', 'fifth', 'third', 'fifth'],
-  Ascending: ['root', 'third', 'fifth', 'root_octave_up'],
+  melodic: ['root', 'third', 'fifth', 'third'],
+  strong: ['root', 'fifth', 'third', 'fifth'],
+  ascending: ['root', 'third', 'fifth', 'root_octave_up'],
   Descending: ['root_octave_up', 'fifth', 'third', 'root']
 }), []);
 
