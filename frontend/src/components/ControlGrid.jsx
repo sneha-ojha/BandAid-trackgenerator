@@ -31,7 +31,7 @@ const StyledSelect = ({ id, label, value, onChange, children, disabled }) => (
     </div>
 );
 
-// --- Sub-Component: InstrumentControlRow (REFACTORED for consistency) ---
+// --- Sub-Component: InstrumentControlRow ---
 const InstrumentControlRow = ({ inst, settings, onToggle, onUpdate }) => {
     const instSettings = settings.activeInstruments[inst.value] || {};
     const isEnabled = !!settings.activeInstruments[inst.value];
@@ -100,7 +100,11 @@ export const ControlGrid = ({
     onUpdateInstrumentSetting,
     arpeggioPatterns,
     beatGains,
-    setBeatGains
+    setBeatGains,
+    // --- ⭐️ CHANGE 1: Accept the new props from Dashboard ---
+    displayedScale,
+    onScaleChange,
+    onTranspose,
 }) => {
     const isArpeggioEnabled = !!settings.activeInstruments['arpeggio'];
     const arpeggioSettings = settings.activeInstruments['arpeggio'] || {};
@@ -118,10 +122,11 @@ export const ControlGrid = ({
             />
         </ControlCard>
 
-        <ControlCard title="Scale">
+        {/* --- ⭐️ CHANGE 2: Update the Scale Card --- */}
+        <ControlCard title={`Scale: ${displayedScale}`}>
             <select
-                value={settings.scale}
-                onChange={(e) => updateSettings({ scale: e.target.value })}
+                value={settings.scale} 
+                onChange={(e) => onScaleChange(e.target.value)} 
                 className="w-full bg-gray-900 border border-purple-600 rounded-xl px-5 py-3 text-pink-400 focus:ring-2 focus:ring-pink-500 outline-none cursor-pointer"
                 aria-label="Musical Scale"
             >
@@ -129,15 +134,16 @@ export const ControlGrid = ({
             </select>
         </ControlCard>
 
+        {/* --- ⭐️ CHANGE 3: Update the Transpose Card --- */}
         <ControlCard title={`Transpose: ${settings.transpose > 0 ? '+' : ''}${settings.transpose}`}>
             <div className="flex justify-center space-x-4">
                 <button
-                    onClick={() => updateSettings({ transpose: settings.transpose - 1 })}
+                    onClick={() => onTranspose(-1)} 
                     className="w-1/2 py-3 bg-gray-900 border border-purple-600 rounded-md shadow-lg hover:bg-purple-600 transition-colors text-gray-100 font-bold"
                     aria-label="Transpose Down"
                 >-1</button>
                 <button
-                    onClick={() => updateSettings({ transpose: settings.transpose + 1 })}
+                    onClick={() => onTranspose(1)} 
                     className="w-1/2 py-3 bg-gray-900 border border-purple-600 rounded-md shadow-lg hover:bg-purple-600 transition-colors text-gray-100 font-bold"
                     aria-label="Transpose Up"
                 >+1</button>
@@ -161,7 +167,7 @@ export const ControlGrid = ({
         </ControlCard>
 
         <ControlCard title="Melody Engine" className="lg:col-span-2">
-            <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+             <div className="flex flex-col md:flex-row gap-6 md:gap-8">
                 {/* --- Left side: Main Toggle & Volume --- */}
                 <div className="space-y-4">
                      <div className="flex items-center space-x-3">
@@ -277,6 +283,8 @@ export const ControlGrid = ({
                     >
                         <option value="1loop">1 loop</option>
                         <option value="2loops">2 loops</option>
+                        {/* --- ⭐️ CHANGE 4: Add the Dembow option --- */}
+                        <option value="dembow">Dembow</option>
                     </StyledSelect>
                 </div>
             </div>

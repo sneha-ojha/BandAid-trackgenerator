@@ -41,12 +41,13 @@ export const ShortcutsFooter = () => (
                     <div className="flex items-center space-x-3"><kbd className="kbd">P</kbd><span className="text-pink-400">➪</span><span>Toggle Piano</span></div>
                     <div className="flex items-center space-x-3"><kbd className="kbd">S</kbd><span className="text-pink-400">➪</span><span>Toggle Strings</span></div>
                     <div className="flex items-center space-x-3"><kbd className="kbd">V</kbd><span className="text-pink-400">➪</span><span>Toggle Violin</span></div>
-
-                    <div className="flex items-center space-x-3 col-span-2 sm:col-span-1 lg:col-span-1"><kbd className="kbd">Space</kbd><span className="text-pink-400">➪</span><span>Play / Stop</span></div>
+<div className="flex items-center space-x-3"><kbd className="kbd">F</kbd><span className="text-pink-400">➪</span><span>Toggle Flute</span></div>
+                 
                     <div className="flex items-center space-x-3"><kbd className="kbd">B</kbd><span className="text-pink-400">➪</span><span>Beats (1 loop)</span></div>
                     <div className="flex items-center space-x-3"><kbd className="kbd">N</kbd><span className="text-pink-400">➪</span><span>Beats (2 loops)</span></div>
                                             <div className="flex items-center space-x-3"><kbd className="kbd">A</kbd><span className="text-pink-400">➪</span><span>Toggle Arpeggio</span></div>
-                    <div className="flex items-center space-x-3"><kbd className="kbd">F</kbd><span className="text-pink-400">➪</span><span>Toggle Flute</span></div>
+                                            <div className="flex items-center space-x-3"><kbd className="kbd">D</kbd><span className="text-pink-400">➪</span><span>Beats (Dembow)</span></div>
+            <div className="flex items-center space-x-3 col-span-2 sm:col-span-1 lg:col-span-1"><kbd className="kbd">Space</kbd><span className="text-pink-400">➪</span><span>Play / Stop</span></div>
                 </div>
             </div>
         </div>

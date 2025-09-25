@@ -233,26 +233,39 @@ if (!playersRef.current[inst.value]) {
 
 
 
+   // --- ⭐️ UPDATED DRUM SEQUENCE FOR DOUBLE-TIME DEMBOW ---
+    const drumSeq = useRef(new Tone.Sequence((time, step) => {
+        const { enableBeats, beatMode } = settingsRef.current;
+        const gain = beatGainsRef.current.beats;
+        
+        if (!enableBeats) return;
 
-const drumSeq = useRef(new Tone.Sequence((time, step) => {
-    const { enableBeats, beatMode } = settingsRef.current;
-    const gain = beatGainsRef.current.beats; // ✅ Get the current volume
-    
-    if (!enableBeats) return;
-
-    if (beatMode === "1loop") {
-        if (step % 2 === 0) {
-            if (step === 0) kick.triggerAttackRelease("C1", "8n", time, gain); // ✅ Use gain
-            if (step === 2) hihat.triggerAttackRelease("F#1", "8n", time, gain); // ✅ Use gain
-            if (step === 4) snare.triggerAttackRelease("D1", "8n", time, gain); // ✅ Use gain
-            if (step === 6) hihat.triggerAttackRelease("F#1", "8n", time, gain); // ✅ Use gain
+        // Note: The sequence now runs on 16th notes (16 steps per measure)
+        if (beatMode === "1loop") {
+            // This is the original "1loop" pattern adapted to a 16-step sequence
+            if (step === 0) kick.triggerAttackRelease("C1", "8n", time, gain);
+            if (step === 4) hihat.triggerAttackRelease("F#1", "8n", time, gain);
+            if (step === 8) snare.triggerAttackRelease("D1", "8n", time, gain);
+            if (step === 12) hihat.triggerAttackRelease("F#1", "8n", time, gain);
+        } 
+        else if (beatMode === "dembow") {
+            // This is the double-time Dembow pattern.
+            // It plays the core "kick...snare" rhythm on every beat.
+            if ([0, 4, 8, 12].includes(step)) {
+                kick.triggerAttackRelease("C1", "8n", time, gain);
+            }
+            if ([3, 6, 11, 14].includes(step)) {
+                snare.triggerAttackRelease("D1", "8n", time, gain);
+            }
+        } 
+        else { // This is for "2loops"
+            // The original "2loops" pattern adapted to a 16-step sequence
+            if (step === 0 || step === 8) kick.triggerAttackRelease("C1", "8n", time, gain);
+            if (step === 4 || step === 12) snare.triggerAttackRelease("D1", "8n", time, gain);
+            if ([2, 6, 10, 14].includes(step)) hihat.triggerAttackRelease("F#1", "16n", time, gain);
         }
-    } else {
-        if (step === 0 || step === 4) kick.triggerAttackRelease("C1", "8n", time, gain); // ✅ Use gain
-        if (step === 2 || step === 6) snare.triggerAttackRelease("D1", "8n", time, gain); // ✅ Use gain
-        if (step % 2 === 1) hihat.triggerAttackRelease("F#1", "16n", time, gain); // ✅ Use gain
-    }
-}, [...Array(8).keys()], "8n")).current;
+    }, [...Array(16).keys()], "16n")).current; // Changed to 16 steps at "16n" subdivision
+
 
 
 const chordSeq = useRef(
@@ -416,18 +429,20 @@ useEffect(() => {
 
 
     
-      const startProgression = useCallback(async () => {
-          if (!audioContext || isPlaying || Object.keys(settings.activeInstruments).length === 0) return;
-          await Tone.start();
-         
-          Tone.Transport.bpm.value = settings.bpm;
-          drumSeq.start(0);
-          chordSeq.start(0);
-          arpeggioSeq.start(0); 
-          Tone.Transport.start();
-          setIsPlaying(true);
-      }, [audioContext, isPlaying, settings.activeInstruments, settings.bpm, drumSeq, chordSeq,arpeggioSeq]);
-  
+ // --- ⭐️ FIX: Allow playing beats even if no instruments are active ---
+    const startProgression = useCallback(async () => {
+        if (!audioContext || isPlaying) return;
+        // This condition now allows playback if EITHER instruments are active OR beats are enabled.
+        if (Object.keys(settings.activeInstruments).length === 0 && !settings.enableBeats) return;
+        
+        await Tone.start();
+        Tone.Transport.bpm.value = settings.bpm;
+        drumSeq.start(0);
+        chordSeq.start(0);
+        arpeggioSeq.start(0); 
+        Tone.Transport.start();
+        setIsPlaying(true);
+    }, [audioContext, isPlaying, settings.activeInstruments, settings.bpm, settings.enableBeats, drumSeq, chordSeq, arpeggioSeq]);
       const stopProgression = useCallback(() => {
           Tone.Transport.stop();
           Tone.Transport.cancel();
@@ -452,9 +467,11 @@ useEffect(() => {
                   case "f": toggleInstrument(instruments.find((i) => i.value === "flute")); break;
                   case "b": updateSettings({ enableBeats: settings.beatMode === '1loop' ? !settings.enableBeats : true, beatMode: '1loop' }); break;
                   case "n": updateSettings({ enableBeats: settings.beatMode === '2loops' ? !settings.enableBeats : true, beatMode: '2loops' }); break;
+                  case "d": updateSettings({ enableBeats: settings.beatMode === 'dembow' ? !settings.enableBeats : true, beatMode: 'dembow' }); break;
                      case "a": // NEW: toggle arpeggio
                 toggleInstrument(instruments.find((i) => i.value === "arpeggio"));
                 break;
+
                   case " ": e.preventDefault(); isPlaying ? stopProgression() : startProgression(); break;
                   default: break;
               }
@@ -555,18 +572,19 @@ useEffect(() => {
                 <br></br>
                 
       {/* --- CHANGE 5: Pass all the new handlers and state to ControlGrid --- */}
-     <ControlGrid
-    settings={settings}
-    updateSettings={updateSettings}
-    scales={scales}
-    instruments={instruments}
-    toggleInstrument={toggleInstrument}
-    onScaleChange={handleScaleChange}
-    onTranspose={handleTranspose}
-    onUpdateInstrumentSetting={updateInstrumentSetting}
-    beatGains={beatGains}         // <-- Add this
-    setBeatGains={setBeatGains} 
-     arpeggioPatterns={arpeggioPatterns}    // <-- Add this
+<ControlGrid
+  settings={settings}
+  updateSettings={updateSettings}
+  scales={scales}
+  instruments={instruments}
+  toggleInstrument={toggleInstrument}
+  onUpdateInstrumentSetting={updateInstrumentSetting}
+  beatGains={beatGains}         
+  setBeatGains={setBeatGains} 
+  arpeggioPatterns={arpeggioPatterns}  
+  displayedScale={displayedScale}       // ✅ pass this
+  onScaleChange={handleScaleChange}     // ✅ pass this
+  onTranspose={handleTranspose}         // ✅ pass this
 />
 
 
