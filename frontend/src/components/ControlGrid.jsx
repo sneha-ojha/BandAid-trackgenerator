@@ -101,8 +101,6 @@ export const ControlGrid = ({
     arpeggioPatterns,
     beatGains,
     setBeatGains,
-    // --- ⭐️ CHANGE 1: Accept the new props from Dashboard ---
-    displayedScale,
     onScaleChange,
     onTranspose,
 }) => {
@@ -123,7 +121,7 @@ export const ControlGrid = ({
         </ControlCard>
 
         {/* --- ⭐️ CHANGE 2: Update the Scale Card --- */}
-        <ControlCard title={`Scale: ${displayedScale}`}>
+        <ControlCard title="Scale">
             <select
                 value={settings.scale} 
                 onChange={(e) => onScaleChange(e.target.value)} 
@@ -135,7 +133,8 @@ export const ControlGrid = ({
         </ControlCard>
 
         {/* --- ⭐️ CHANGE 3: Update the Transpose Card --- */}
-        <ControlCard title={`Transpose: ${settings.transpose > 0 ? '+' : ''}${settings.transpose}`}>
+      <ControlCard title="Transpose">
+
             <div className="flex justify-center space-x-4">
                 <button
                     onClick={() => onTranspose(-1)} 
@@ -166,7 +165,7 @@ export const ControlGrid = ({
             </div>
         </ControlCard>
 
-        <ControlCard title="Melody Engine" className="lg:col-span-2">
+        <ControlCard title="Melody" className="lg:col-span-2">
              <div className="flex flex-col md:flex-row gap-6 md:gap-8">
                 {/* --- Left side: Main Toggle & Volume --- */}
                 <div className="space-y-4">
@@ -242,7 +241,7 @@ export const ControlGrid = ({
             </div>
         </ControlCard>
 
-        <ControlCard title="Rhythm Engine">
+        <ControlCard title="Rhythm">
             <div className="flex flex-col md:flex-row gap-6 md:gap-8">
                 {/* --- Left Side: Toggle & Volume --- */}
                 <div className="space-y-4">
@@ -281,10 +280,10 @@ export const ControlGrid = ({
                         onChange={(e) => updateSettings({ beatMode: e.target.value })}
                         disabled={!settings.enableBeats}
                     >
-                        <option value="1loop">1 loop</option>
-                        <option value="2loops">2 loops</option>
+                        <option value="1loop">Basic Rock (1 loop)</option>
+                        <option value="2loops">Basic Rock (2 loops)</option>
                         {/* --- ⭐️ CHANGE 4: Add the Dembow option --- */}
-                        <option value="dembow">Dembow</option>
+                        <option value="dembow">Dembow Riddim</option>
                     </StyledSelect>
                 </div>
             </div>
